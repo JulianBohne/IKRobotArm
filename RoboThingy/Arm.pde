@@ -11,6 +11,54 @@ class ArmElement extends GameObject{
     this(null);
   }
   
+  void inverseKinematicsIteration(PVector target){
+    PVector localTarget = toLocalSpace(target);
+    inverseKinematicsIteration(Float.MAX_VALUE, new PVector(0, 0, 0), localTarget);
+  }
+  
+  private float inverseKinematicsIteration(float childMinError, PVector localEnd, PVector localTarget){
+    float localError = testSolveLocal(localEnd, localTarget);
+    if(parent != null){
+      float parentMinError = parent.inverseKinematicsIteration(
+        min(childMinError, localError),
+        toParentSpace(localEnd),
+        toParentSpace(localTarget)
+      );
+      if(parentMinError < localError && parentMinError <= childMinError) return parentMinError;
+    }
+    if(localError <= childMinError){
+      solveLocal(localEnd, localTarget);
+      return localError;
+    }
+    
+    return childMinError;
+  }
+  
+  protected float testSolveLocal(PVector localEnd, PVector localTarget){
+    return PVector.dist(localTarget, localEnd);
+  }
+  
+  @SuppressWarnings("unused")
+  protected void solveLocal(PVector localEnd, PVector localTarget){}
+  
+  PVector toParentSpace(PVector vec){
+    PMatrix3D mat;
+    PVector tmp;
+    mat = endpoint.asMatrix();
+    tmp = mult(mat, vec);
+    mat = transform.asMatrix();
+    tmp = mult(mat, tmp);
+    return tmp;
+  }
+  
+  private PVector mult(PMatrix3D mat, PVector vec){
+    return new PVector(
+      mat.m00 * vec.x + mat.m01 * vec.y + mat.m02 * vec.z + mat.m03,
+      mat.m10 * vec.x + mat.m11 * vec.y + mat.m12 * vec.z + mat.m13,
+      mat.m20 * vec.x + mat.m21 * vec.y + mat.m22 * vec.z + mat.m23
+    );
+  }
+  
   PVector toWorldSpace(PVector vec){
     Vec4 transformed = new Vec4(vec);
     Vec4 tmp = new Vec4();
@@ -25,6 +73,24 @@ class ArmElement extends GameObject{
     mat = transform.asMatrix();
     mult(mat, vec, tmp);
     if(parent != null) parent.toWorldSpace(vec, tmp);
+  }
+  
+  PVector toLocalSpace(PVector vec){
+    Vec4 transformed = new Vec4(vec);
+    Vec4 tmp = new Vec4();
+    toLocalSpace(transformed, tmp);
+    return new PVector(transformed.x, transformed.y, transformed.z);
+  }
+  
+  private void toLocalSpace(Vec4 vec, Vec4 tmp){
+    if(parent != null) parent.toLocalSpace(vec, tmp);
+    PMatrix3D mat;
+    mat = transform.asMatrix();
+    mat.invert();
+    mult(mat, vec, tmp);
+    mat = endpoint.asMatrix();
+    mat.invert();
+    mult(mat, vec, tmp);
   }
   
   private class Vec4{
@@ -162,6 +228,16 @@ class ArmLink extends ArmElement{
     visual = nVisual;
     return this;
   }
+  
+  //@Override
+  //protected float testSolveLocal(PVector localEnd, PVector localTarget){
+  //  return new PVector(localTarget.x - localEnd.x, 0, localTarget.z - localEnd.z).mag();
+  //}
+  
+  //@Override
+  //protected void solveLocal(PVector localEnd, PVector localTarget){
+  //  setLength((localTarget.y - localEnd.y) + len);
+  //}
 }
 
 class ArmBase extends ArmElement{
@@ -180,6 +256,11 @@ class ArmBase extends ArmElement{
 }
 
 class HingeJoint extends ArmElement{
+  
+  float angleRange = HALF_PI;
+  boolean constrained = true;
+  private float currentAngle;
+  
   HingeJoint(){
     this(null);
   }
@@ -189,11 +270,48 @@ class HingeJoint extends ArmElement{
     visual = new Cylinder();
     visual.transform.rotation.rotateZ(HALF_PI);
     visual.transform.scale.mult(0.8);
+    currentAngle = 0;
   }
   
   void setRotation(float angle){
     endpoint.rotation.reset();
+    rotateBy(angle);
+    currentAngle = angle;
+  }
+  
+  void rotateBy(float angle){
+    angle = toLegalAngle(angle);
     endpoint.rotation.rotateX(angle);
+    currentAngle += angle;
+  }
+  
+  private float toLegalAngle(float rawAngle){
+    if(!constrained) return rawAngle;
+    return constrain(currentAngle + rawAngle, -angleRange, angleRange) - currentAngle;
+  }
+  
+  @Override
+  protected float testSolveLocal(PVector localEnd, PVector localTarget){
+    float deltaAngle = toLegalAngle(getDeltaAngle(localEnd, localTarget));
+    PVector dings = localEnd.copy();
+    rotateX(dings, deltaAngle);
+    return PVector.dist(localTarget, dings);
+    //return len(localTarget.x - localEnd.x, len(localTarget.y, localTarget.z) - len(localEnd.y, localEnd.z));
+  }
+  
+  //private float len(float x, float y){
+  //  return sqrt(x*x + y*y);
+  //}
+  
+  private float getDeltaAngle(PVector localEnd, PVector localTarget){
+    PVector projectedEnd = new PVector(localEnd.y, localEnd.z);
+    PVector projectedTarget = new PVector(localTarget.y, localTarget.z);
+    return signedAngleBetween(projectedTarget, projectedEnd);
+  }
+  
+  @Override
+  protected void solveLocal(PVector localEnd, PVector localTarget){
+    rotateBy(getDeltaAngle(localEnd, localTarget)*0.5);
   }
   
   HingeJoint setLength(float nLen){

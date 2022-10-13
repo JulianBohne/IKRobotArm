@@ -24,6 +24,10 @@ void setup(){
   arm = new Arm()
     .addComponentToActive(new HingeJoint(), "j1")
     .addComponentToActive(new ArmLink(1), "l1")
+    .addComponentToActive(new HingeJoint())
+    .addComponentToActive(new ArmLink(2))
+    .addComponentToActive(new HingeJoint())
+    .addComponentToActive(new ArmLink(2))
     .addComponentToActive(new HingeJoint(), "j2")
     .addComponentToActive(new ArmLink(2).setDiameter(0.4), "l2")
     .addComponentToActive(new HingeJoint().setDiameter(0.5), "j3")
@@ -77,15 +81,16 @@ void setup(){
   arm.getComponent(HingeJoint.class, "hj2").setRotation(0.6);
   arm.getComponent(HingeJoint.class, "hj22").setRotation(-0.6);
   
-  //arm.getComponent(HingeJoint.class, "j3").setRotation(HALF_PI - 0.75 - 0.2);
-  //arm.getComponent(HingeJoint.class, "j2").setRotation(0.75);
-  //arm.getComponent(HingeJoint.class, "j1").setRotation(0.2);
+  arm.getComponent(HingeJoint.class, "j3").setRotation(HALF_PI - 0.75 - 0.2);
+  arm.getComponent(HingeJoint.class, "j2").setRotation(0.75);
+  arm.getComponent(HingeJoint.class, "j1").setRotation(0.2);
+  arm.getComponent(HingeJoint.class, "j1").constrained = false;
   
   arm.getComponent("j1").transform.rotation.rotateZ(-HALF_PI);
   arm.getComponent("l1").transform.rotation.rotateZ(HALF_PI);
   
   arm.getComponent("end").visual.style.fill = color(255, 0, 0);
-  arm.getComponent("end").visual.transform.scale.set(0.05, 0.05, 0.05);
+  arm.getComponent("end").visual.transform.scale.set(0.1, 0.1, 0.1);
   
   
   arm.transform.rotation.rotateY(HALF_PI);
@@ -101,15 +106,20 @@ void draw(){
   
   // CONTROLS AND SIM
   
+  PVector target = new PVector(cos(time)*(4+sin(time*3.123)*3), (sin(time*2.532 + 43) + 1)*2, sin(time)*(4+sin(time*4.12335)*3));
   
-  arm.getComponent(HingeJoint.class, "j1").setRotation(time*2 % TWO_PI);
-  arm.getComponent(HingeJoint.class, "j2").setRotation(sin(time*1.5)*HALF_PI);
-  arm.getComponent(HingeJoint.class, "j3").setRotation(sin(time*3)*HALF_PI);
+  for(int i = 0; i < 50; i ++)
+    arm.getComponent("end").inverseKinematicsIteration(target);
+  //arm.getComponent(HingeJoint.class, "j1").setRotation(time*2 % TWO_PI);
+  //arm.getComponent(HingeJoint.class, "j2").setRotation(sin(time*1.5)*HALF_PI);
+  //arm.getComponent(HingeJoint.class, "j3").setRotation(sin(time*3)*HALF_PI);
   
   //arm.getComponent(HingeJoint.class, "j1").setRotation(armAngleX);
   //arm.getComponent(HingeJoint.class, "j2").setRotation(armAngleZ);
   
   endpointPath.add(arm.getComponent("end").toWorldSpace(new PVector(0, 0, 0)));
+  
+  
   //if(endpointPath.size() > 100) endpointPath.remove();  
   
   //armAngleX += armSpeed;
@@ -159,6 +169,10 @@ void draw(){
   coords();
   
   arm.render();
+  
+  stroke(0, 255, 0);
+  strokeWeight(0.2);
+  point(target.x, target.y, target.z);
   
   pushStyle();
   colorMode(HSB);
