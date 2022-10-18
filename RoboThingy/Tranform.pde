@@ -57,6 +57,15 @@ class Transform{
     scale(scale.x, scale.y, scale.z);
   }
   
+  //public void unapply(){
+  //  scale(1/scale.x, 1/scale.y, 1/scale.z);
+  //  PVector rot = getRotationVector();
+  //  rotateZ(-rot.z);
+  //  rotateX(-rot.y);
+  //  rotateY(-rot.z);
+  //  translate(-position.x, -position.y, -position.z);
+  //}
+  
   public PMatrix3D asMatrix(){
     PMatrix3D current = new PMatrix3D();
     current.translate(position.x, position.y, position.z);

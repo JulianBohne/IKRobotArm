@@ -5,6 +5,10 @@ class GameObject{
   GameObject(){
     transform = new Transform();
     style = new Style();
+    pushStyle();
+    colorMode(HSB);
+    style.fill = color(random(255), 127, 255);
+    popStyle();
   }
   
   void render(){
@@ -22,7 +26,7 @@ class GameObject{
 
 class Box extends GameObject{
   Box(){
-    style.strokeWeight = 0.05;
+    //style.strokeWeight = 0.05;
   }
   
   @Override
