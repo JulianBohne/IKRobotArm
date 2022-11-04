@@ -1,3 +1,25 @@
+void errorBar(int x, int y, int w, int h, float errorMax){
+  float padding = 5;
+  float numEveryPixels = 100;
+  
+  pushStyle();
+  colorMode(HSB);
+  strokeWeight(1);
+  for(int yoff = 0; yoff < h; yoff ++){
+    stroke(map(yoff, 0, h, 0, 168), 255, 255);
+    line(x, y + yoff, x + w, y + yoff);
+  }
+  stroke(255);
+  noFill();
+  rect(x, y, w, h);
+  textAlign(LEFT, CENTER);
+  int numLabels = floor(h/numEveryPixels);
+  for(int i = 0; i <= numLabels; i ++){
+    text(errorMax * (1 - (float)i/numLabels), x + w + padding, y + i * ((float)h/numLabels));
+  }
+  popStyle();
+}
+
 void coords(){
   float axisLength = 10; // All in all 20 = 10 + 10
   float arrowSize = 1;
@@ -164,6 +186,10 @@ PVector rotateX(PVector v, float angle){
   v.y = cos(angle)*v.y - sin(angle)*v.z;
   v.z = cos(angle)*v.z + sin(angle)*tmpY;
   return v;
+}
+
+float triangle(float x){
+  return 2 * abs(x - floor(x + 0.5));
 }
 
 import java.util.Iterator;

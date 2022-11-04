@@ -10,9 +10,31 @@ class ArmElement extends GameObject{
     this(null);
   }
   
-  void inverseKinematicsIteration(PVector target){
+  float inverseKinematics(PVector target){
+    return inverseKinematics(target, 0.000001, 10000);
+  }
+  
+  //@SuppressWarnings("unused")
+  float inverseKinematics(PVector target, float epsilon, int maxIterations){
+    PVector last = toWorldSpace(new PVector(0, 0, 0));
+    PVector current;
+    float epsilonSq = epsilon*epsilon;
+    float error = Float.MAX_VALUE;
+    for(int i : range(maxIterations)){
+      error = inverseKinematicsIteration(target);
+      current = toWorldSpace(new PVector(0, 0, 0));
+      if(last.sub(current).magSq() < epsilonSq){
+        println(i);
+        return error;
+      }
+      last = current;
+    }
+    return error;
+  }
+  
+  float inverseKinematicsIteration(PVector target){
     PVector localTarget = toLocalSpace(target);
-    inverseKinematicsIteration(localTarget.mag(), new PVector(0, 0, 0), localTarget);
+    return inverseKinematicsIteration(localTarget.mag(), new PVector(0, 0, 0), localTarget);
   }
   
   private float inverseKinematicsIteration(float childMinError, PVector localEnd, PVector localTarget){
@@ -26,7 +48,7 @@ class ArmElement extends GameObject{
       if(parentMinError < localError && parentMinError <= childMinError) return parentMinError;
     }
     if(localError <= childMinError){
-      solveLocal(localEnd, localTarget);
+      solveLocal(localEnd, localTarget, 1);
       return localError;
     }
     
@@ -38,7 +60,7 @@ class ArmElement extends GameObject{
   }
   
   @SuppressWarnings("unused")
-  protected void solveLocal(PVector localEnd, PVector localTarget){}
+  protected void solveLocal(PVector localEnd, PVector localTarget, float amount){}
   
   PVector toParentSpace(PVector vec){
     PMatrix3D mat;

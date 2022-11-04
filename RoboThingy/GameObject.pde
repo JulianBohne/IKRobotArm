@@ -26,7 +26,7 @@ class GameObject{
 
 class Box extends GameObject{
   Box(){
-    //style.strokeWeight = 0.05;
+    style.strokeWeight = 0.05;
   }
   
   @Override
