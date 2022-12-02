@@ -25,6 +25,9 @@ void setup() {
 
   arm = obliqueSwivelTestArm();
   //arm = testArm1();
+  
+  setupPlots();
+  
   for(int i : range(2))
     tp.add(new PVector(random(0, 4), random(0, 4), random(0, 4)));
 }
@@ -183,8 +186,40 @@ void draw() {
   
   errorBar(width-20, 20, 20, height-40, maxError, smoothedError);
   
-  angleList(arm.getAllComponents(HingeJoint.class));
+  //angleList(arm.getAllComponents(HingeJoint.class));
+  updateAndShowPlots();
   
+}
+
+
+ArrayList<HingeJoint> hingeJoints;
+ArrayList<ContinuousPlot> anglePlots = new ArrayList<>();
+
+void setupPlots(){
+  float padding = 5;
+  float plotHeight = 50;
+  float plotWidth = width/4;
+  
+  hingeJoints = arm.getAllComponents(HingeJoint.class);
+  
+  HingeJoint current;
+  float cAngleRange;
+  color cCol;
+  String cName;
+  for(int i = 0; i < hingeJoints.size(); i ++){
+    current = hingeJoints.get(i);
+    cAngleRange = degrees(current.constrained ? current.angleRange : PI);
+    cCol = current.visual.style.fill;
+    cName = current.name;
+    anglePlots.add(new ContinuousPlot(padding, padding + (padding + plotHeight)*i, plotWidth, plotHeight, -cAngleRange, cAngleRange, cCol, cName, (int)plotWidth/2));
+  }
+}
+
+void updateAndShowPlots(){
+  for(int i = 0; i < hingeJoints.size(); i ++){
+    anglePlots.get(i).addValue(degrees(hingeJoints.get(i).getAngle()));
+    anglePlots.get(i).show();
+  }
 }
 
 void mousePressed() {
@@ -199,7 +234,6 @@ void keyPressed() {
     arm.setShowDebug(!arm.showDebug);
   }
 }
-
 
 void mouseWheel(MouseEvent e) {
   zoom *= pow(zoomMultiplier, -e.getCount());

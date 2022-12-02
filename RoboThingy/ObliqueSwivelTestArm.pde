@@ -1,5 +1,5 @@
 Arm obliqueSwivelTestArm(){
-  float angle = PI/9;
+  float angle = PI/6;
   
   Arm arm = new Arm()
     .addComponentToActive(new ObliqueSwivelJoint(0), "j0")

@@ -215,6 +215,10 @@ float triangle(float x){
   return 2 * abs(x - floor(x + 0.5));
 }
 
+float fmod(float a, float b){
+  return a - floor(a / b) * b;
+}
+
 void text(String text, float size){
   float scaleOffset = 128;
   pushMatrix();
