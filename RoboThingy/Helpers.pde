@@ -1,21 +1,44 @@
-void errorBar(int x, int y, int w, int h, float errorMax){
+void errorBar(int x, int y, int w, int h, float errorMax, float errorCurrent){
   float padding = 5;
   float numEveryPixels = 100;
+  float textSize = 20;
   
   pushStyle();
   colorMode(HSB);
   strokeWeight(1);
   for(int yoff = 0; yoff < h; yoff ++){
     stroke(map(yoff, 0, h, 0, 168), 255, 255);
-    line(x, y + yoff, x + w, y + yoff);
+    line(x - w, y + yoff, x, y + yoff);
   }
+  strokeWeight(3);
   stroke(255);
+  float yErrorCurrent = map(errorCurrent, 0, errorMax, y + h, y);
+  line(x - w, yErrorCurrent, x, yErrorCurrent);
+  strokeWeight(1);
   noFill();
-  rect(x, y, w, h);
-  textAlign(LEFT, CENTER);
+  rect(x - w, y, w, h);
+  textAlign(RIGHT, CENTER);
+  textSize(textSize);
+  fill(255);
   int numLabels = floor(h/numEveryPixels);
   for(int i = 0; i <= numLabels; i ++){
-    text(errorMax * (1 - (float)i/numLabels), x + w + padding, y + i * ((float)h/numLabels));
+    text(errorMax * (1 - (float)i/numLabels), x - w - padding, y + i * ((float)h/numLabels));
+  }
+  popStyle();
+}
+
+void angleList(ArrayList<HingeJoint> joints){
+  float padding = 5;
+  float textSize = 20;
+  
+  pushStyle();
+  textAlign(LEFT, TOP);
+  textSize(textSize);
+  fill(255);
+  HingeJoint joint;
+  for(int i = 0; i < joints.size(); i ++){
+    joint = joints.get(i);
+    text(joint.name + ": " + round(degrees(joint.getAngle())*100)/100f + "°", padding, padding + (padding + textSize)*i);
   }
   popStyle();
 }
@@ -190,6 +213,15 @@ PVector rotateX(PVector v, float angle){
 
 float triangle(float x){
   return 2 * abs(x - floor(x + 0.5));
+}
+
+void text(String text, float size){
+  float scaleOffset = 128;
+  pushMatrix();
+  scale(1f/scaleOffset);
+  textSize(scaleOffset*size);
+  text(text, 0, 0, 0);
+  popMatrix();
 }
 
 import java.util.Iterator;

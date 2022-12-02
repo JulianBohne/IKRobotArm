@@ -5,13 +5,14 @@ class ArmElement extends GameObject{
   GameObject visual;
   Transform endpoint;
   boolean disableIK = false;
-  
+  String name = "";
+  boolean showDebug = false;
   ArmElement(){
     this(null);
   }
   
   float inverseKinematics(PVector target){
-    return inverseKinematics(target, 0.000001, 10000);
+    return inverseKinematics(target, 0.000001, 1000);
   }
   
   //@SuppressWarnings("unused")
@@ -48,7 +49,7 @@ class ArmElement extends GameObject{
       if(parentMinError < localError && parentMinError <= childMinError) return parentMinError;
     }
     if(localError <= childMinError){
-      solveLocal(localEnd, localTarget, 1);
+      solveLocal(localEnd, localTarget, 0.1);
       return localError;
     }
     
@@ -148,6 +149,7 @@ class ArmElement extends GameObject{
     this.parent = parent;
     this.children = new ArrayList<ArmElement>();
     this.visual = new Sphere();
+    this.style = visual.style;
     this.endpoint = new Transform();
     
     if(parent != null) parent.addChildUnique(this);
@@ -176,6 +178,12 @@ class ArmElement extends GameObject{
   
   @Override
   void OnRender(){
+    if(showDebug){
+      visual.style.apply();
+      translate(0.5,0.5,0.5);
+      text(name, 0.5);
+      translate(-0.5,-0.5,-0.5);
+    }
     endpoint.apply();
     visual.render();
     for(ArmElement child : children){

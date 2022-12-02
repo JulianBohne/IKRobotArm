@@ -137,6 +137,10 @@ class HingeJoint extends ArmElement{
     currentAngle = 0;
   }
   
+  float getAngle(){
+    return currentAngle;
+  }
+  
   void setRotation(float angle){
     endpoint.rotation.reset();
     rotateBy(angle);

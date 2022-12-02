@@ -1,22 +1,24 @@
 Arm obliqueSwivelTestArm(){
+  float angle = PI/9;
+  
   Arm arm = new Arm()
     .addComponentToActive(new ObliqueSwivelJoint(0), "j0")
     .addComponentToActive(new ArmLink(1), "l0")
-    .addComponentToActive(new ObliqueSwivelJoint(PI/9), "j1")
+    .addComponentToActive(new ObliqueSwivelJoint(angle), "j1")
     .addComponentToActive(new ArmLink(1), "l1")
-    .addComponentToActive(new ObliqueSwivelJoint(PI/9), "j2")
+    .addComponentToActive(new ObliqueSwivelJoint(angle), "j2")
     .addComponentToActive(new ArmLink(1), "l2")
-    .addComponentToActive(new ObliqueSwivelJoint(PI/9), "j3")
+    .addComponentToActive(new ObliqueSwivelJoint(angle), "j3")
     .addComponentToActive(new ArmLink(1), "l3")
-    .addComponentToActive(new ObliqueSwivelJoint(PI/9), "j4")
+    .addComponentToActive(new ObliqueSwivelJoint(angle), "j4")
     .addComponentToActive(new ArmLink(1), "l4")
-    .addComponentToActive(new ObliqueSwivelJoint(PI/9), "j5")
+    .addComponentToActive(new ObliqueSwivelJoint(angle), "j5")
     .addComponentToActive(new ArmLink(1), "l5")
-    .addComponentToActive(new ObliqueSwivelJoint(PI/9), "j6")
+    .addComponentToActive(new ObliqueSwivelJoint(angle), "j6")
     .addComponentToActive(new ArmLink(1), "l6")
-    .addComponentToActive(new ObliqueSwivelJoint(PI/9), "j7")
+    .addComponentToActive(new ObliqueSwivelJoint(angle), "j7")
     .addComponentToActive(new ArmLink(1), "l7")
-    .addComponentToActive(new ObliqueSwivelJoint(PI/9), "j8")
+    .addComponentToActive(new ObliqueSwivelJoint(angle), "j8")
     .addComponentToActive(new ArmLink(0.8), "l8")
     .addComponentToActive(new ArmEndpoint(0, 0.2, 0), "end");
   

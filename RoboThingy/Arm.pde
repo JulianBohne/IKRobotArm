@@ -22,6 +22,9 @@ class Arm extends ArmElement{
   <T extends ArmElement> Arm addComponent(T component){
     ArrayList<ArmElement> compList = (ArrayList<ArmElement>)getComponents(component.getClass());
     active = component;
+    if(!component.name.equals("")){
+      namedComponents.put(component.name, component);
+    }
     if(compList.contains(component)) return this;
     compList.add(component);
     return this;
@@ -33,7 +36,7 @@ class Arm extends ArmElement{
   }
   
   <T extends ArmElement> Arm addComponent(T component, String name){
-    namedComponents.put(name, component);
+    component.name = name;
     return addComponent(component);
   }
   
@@ -46,8 +49,19 @@ class Arm extends ArmElement{
     return (T)getComponent(name);
   }
   
+  <T extends ArmElement> ArrayList<T> getAllComponents(Class<T> type){
+    ArrayList<T> compList = new ArrayList<T>();
+    for(Class<?> clazz : components.keySet()){
+      if(type.isAssignableFrom(clazz)){
+        compList.addAll((ArrayList<T>)components.get(clazz));
+      }
+    }
+    return compList;
+  }
+  
   <T extends ArmElement> ArrayList<T> getComponents(Class<T> type){
     ArrayList<ArmElement> compList = components.get(type);
+    
     if(compList == null){
       compList = new ArrayList<ArmElement>();
       components.put(type, compList);
@@ -62,6 +76,15 @@ class Arm extends ArmElement{
   Arm setActive(String name){
     active = getComponent(name);
     return this;
+  }
+  
+  void setShowDebug(boolean show){
+    this.showDebug = show;
+    for(ArrayList<ArmElement> elemList : components.values()){
+      for(ArmElement elem : elemList){
+        elem.showDebug = show;
+      }
+    }
   }
   
   @Override

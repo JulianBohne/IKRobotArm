@@ -2,8 +2,6 @@ public static float dt = 1/60f;
 public static float time = 0f;
 public static boolean pmousePressed = false;
 
-import java.util.LinkedList;
-
 float xAngle = 0, yAngle = 0;
 float mouseSensitivity = 0.5; // degrees per pixel
 float zoom = 1, zoomMultiplier = 1.1;
@@ -27,7 +25,6 @@ void setup() {
 
   arm = obliqueSwivelTestArm();
   //arm = testArm1();
-  
   for(int i : range(2))
     tp.add(new PVector(random(0, 4), random(0, 4), random(0, 4)));
 }
@@ -41,6 +38,7 @@ boolean pCloseToZero = true;
 float timeOffset = 0;
 
 float maxError = 0.000001;
+float smoothedError = 0;
 
 void draw() {
   dt = 1f/frameRate;
@@ -53,12 +51,13 @@ void draw() {
   //float c = 100; // 5
   //float d = 0.01;//1.349823; // 1.349823
 
-  float currentPos = triangle(5*(time - timeOffset) / tp.getLength())*tp.getLength();//((-cos(20 * (time - timeOffset) /tp.getLength()) / 2) + 0.5) * tp.getLength();
+  float currentPos = triangle(2*(time - timeOffset) / tp.getLength())*tp.getLength();//((-cos(20 * (time - timeOffset) /tp.getLength()) / 2) + 0.5) * tp.getLength();
 
   PVector target = tp.getPoint(currentPos);
 
   float error = arm.getComponent("end").inverseKinematics(target);
   maxError = max(maxError, error);
+  smoothedError = lerp(smoothedError, error, 0.05);
 
   endpointPath.add(arm.getComponent("end").toWorldSpace(new PVector(0, 0, 0)));
   
@@ -69,7 +68,7 @@ void draw() {
   if(currentPos < 0.1){
     if(!pCloseToZero){
       timeOffset = time;
-      tp.add(new PVector(random(0, 5), random(0, 5), random(0, 5)));
+      tp.add(new PVector(random(0, 6), random(0, 6), random(0, 6)));
       pCloseToZero = true;
     }
   }else pCloseToZero = false;
@@ -180,7 +179,11 @@ void draw() {
   
   // Overlays
   
-  errorBar(20, 20, 20, height-40, maxError);
+  lights(); // The other lighting is not suitable for the overlays
+  
+  errorBar(width-20, 20, 20, height-40, maxError, smoothedError);
+  
+  angleList(arm.getAllComponents(HingeJoint.class));
   
 }
 
@@ -192,6 +195,8 @@ void keyPressed() {
     maxError = 0.000001;
     endpointPath.clear();
     errorPath.clear();
+  }else if(key == 'd'){
+    arm.setShowDebug(!arm.showDebug);
   }
 }
 
