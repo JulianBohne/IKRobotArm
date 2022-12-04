@@ -1,5 +1,7 @@
 class ContinuousPlot{
   float x, y, w, h, min, max;
+  boolean autoScale = true;
+  boolean autoMinScale = true;
   color col;
   String label;
   Ringbuffer<Float> values;
@@ -21,6 +23,24 @@ class ContinuousPlot{
   
   public void addValue(float value){
     values.add(value);
+    
+    if(autoMinScale){
+      float actMin = Float.MAX_VALUE;
+      float actMax = -Float.MAX_VALUE;
+      for(Object obj : values.getValues()){ // Not the most efficient to do this every time, but computers are fast xD
+        actMin = min((Float)obj, actMin);
+        actMax = max((Float)obj, actMax);
+      }
+      min = min(lerp(min, actMin, 0.1), actMin);
+      max = max(lerp(max, actMax, 0.1), actMax);
+      if(min == max){
+        max += 0.0001;
+        min -= 0.0001;
+      }
+    }else if(autoScale){
+      min = min(min, value);
+      max = max(max, value);
+    }
   }
   
   public void show(){
@@ -41,8 +61,10 @@ class ContinuousPlot{
     strokeWeight(2);
     beginShape();
     int numValues = values.size();
+    float currentValue;
     for(int i = 0; i < numValues; i ++){
-      vertex(map(i, 0, numValues, 0, w), map(fmod(values.get(i) - min, max - min) + min, min, max, h, 0));
+      currentValue = autoScale ? values.get(i) : fmod(values.get(i) - min, max - min) + min;
+      vertex(map(i, 0, numValues, 0, w), map(currentValue, min, max, h, 0));
     }
     endShape();
     
@@ -84,9 +106,15 @@ class Ringbuffer<T>{
     return values.length;
   }
   
-  public void add(float value){
+  public T add(T value){
     currentIndex = (currentIndex + 1) % size();
+    Object tmp = values[currentIndex];
     values[currentIndex] = value;
+    return (T)tmp;
+  }
+  
+  public Object[] getValues(){
+    return (Object[])values;
   }
   
 }

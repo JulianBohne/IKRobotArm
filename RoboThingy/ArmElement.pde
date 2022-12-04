@@ -12,7 +12,7 @@ class ArmElement extends GameObject{
   }
   
   float inverseKinematics(PVector target){
-    return inverseKinematics(target, 0.000001, 10);
+    return inverseKinematics(target, 0.000001, 1000);
   }
   
   //@SuppressWarnings("unused")
@@ -49,7 +49,7 @@ class ArmElement extends GameObject{
       if(parentMinError < localError && parentMinError <= childMinError) return parentMinError;
     }
     if(localError <= childMinError){
-      solveLocal(localEnd, localTarget, 1);
+      solveLocal(localEnd, localTarget, 0.2);
       return localError;
     }
     

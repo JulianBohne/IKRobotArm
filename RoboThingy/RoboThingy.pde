@@ -28,8 +28,14 @@ void setup() {
   
   setupPlots();
   
-  for(int i : range(2))
+  for(int i : range(10))
     tp.add(new PVector(random(0, 4), random(0, 4), random(0, 4)));
+
+  /*for(int i : range(1501)){
+    tp.add(paramFunction(currentParamValue));
+    currentParamValue += 1f/50;
+  }*/
+  
 }
 
 float armAngleRange = PI/2;
@@ -39,6 +45,7 @@ float armAngleZ = -armAngleRange;
 
 boolean pCloseToZero = true;
 float timeOffset = 0;
+float currentParamValue = 0;
 
 float maxError = 0.000001;
 float smoothedError = 0;
@@ -71,6 +78,10 @@ void draw() {
   if(currentPos < 0.1){
     if(!pCloseToZero){
       timeOffset = time;
+      /*for(int i : range(50)){
+        tp.add(paramFunction(currentParamValue));
+        currentParamValue += 1f/50;
+      }*/
       tp.add(new PVector(random(0, 6), random(0, 6), random(0, 6)));
       pCloseToZero = true;
     }
@@ -191,6 +202,16 @@ void draw() {
   
 }
 
+PVector paramFunction(float t){
+  float x = (cos(t*TWO_PI)+0)*cos(t/5)*4 + 0;
+  float z = (sin(t*TWO_PI)+0)*cos(t/5)*4 + 0;
+  float y = t/5;
+  
+  //float x = 2*(2*cos(t) + cos(2*t));
+  //float z = 2*(2*sin(t) - sin(2*t));
+  return new PVector(x, y, z);
+}
+
 
 ArrayList<HingeJoint> hingeJoints;
 ArrayList<ContinuousPlot> anglePlots = new ArrayList<>();
@@ -211,7 +232,7 @@ void setupPlots(){
     cAngleRange = degrees(current.constrained ? current.angleRange : PI);
     cCol = current.visual.style.fill;
     cName = current.name;
-    anglePlots.add(new ContinuousPlot(padding, padding + (padding + plotHeight)*i, plotWidth, plotHeight, -cAngleRange, cAngleRange, cCol, cName, (int)plotWidth/2));
+    anglePlots.add(new ContinuousPlot(padding, padding + (padding + plotHeight)*i, plotWidth, plotHeight, -cAngleRange, cAngleRange, cCol, cName, (int)plotWidth*1));
   }
 }
 
