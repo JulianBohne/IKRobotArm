@@ -200,6 +200,7 @@ void draw() {
   //angleList(arm.getAllComponents(HingeJoint.class));
   updateAndShowPlots();
   
+  //saveFrame("frames/frame####.png");
 }
 
 PVector paramFunction(float t){
