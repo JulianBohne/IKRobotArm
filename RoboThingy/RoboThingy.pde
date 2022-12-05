@@ -1,6 +1,8 @@
 public static float dt = 1/60f;
+public static PVector gravity = new PVector(0, -9.81, 0);
 public static float time = 0f;
 public static boolean pmousePressed = false;
+public static boolean paused = false;
 
 float xAngle = 0, yAngle = 0;
 float mouseSensitivity = 0.5; // degrees per pixel
@@ -15,6 +17,8 @@ ArrayList<Float> errorPath = new ArrayList<>();
 
 LineToolPath tp = new LineToolPath();
 
+BouncyThingy ball;
+
 void setup() {
   size(800, 600, P3D);
 
@@ -23,8 +27,8 @@ void setup() {
   worldTransform.scale.z = -1;
   worldTransform.scale.mult(height/20);
 
-  arm = obliqueSwivelTestArm();
-  //arm = testArm1();
+  //arm = obliqueSwivelTestArm();
+  arm = testArm1();
   
   setupPlots();
   
@@ -36,6 +40,9 @@ void setup() {
     currentParamValue += 1f/50;
   }*/
   
+  ball = new BouncyThingy(new PVector(2, 2, 2), new PVector(random(1, 10), 10, random(1, 10)), new Bounds3D(-7, 0, -7, 14, 14, 14));
+  ball.radius = 0.5;
+  println(ball.velocity);
 }
 
 float armAngleRange = PI/2;
@@ -50,80 +57,94 @@ float currentParamValue = 0;
 float maxError = 0.000001;
 float smoothedError = 0;
 
+boolean step = false;
+
 void draw() {
   dt = 1f/frameRate;
   //dt *= 0.01;
   //dt *= 0.5;
+  
+  
   // CONTROLS AND SIM
-
-  //float a = 100; // 2
-  //float b = 100; // 3
-  //float c = 100; // 5
-  //float d = 0.01;//1.349823; // 1.349823
-
-  float currentPos = triangle(2*(time - timeOffset) / tp.getLength())*tp.getLength();//((-cos(20 * (time - timeOffset) /tp.getLength()) / 2) + 0.5) * tp.getLength();
-
-  PVector target = tp.getPoint(currentPos);
-
-  float error = arm.getComponent("end").inverseKinematics(target);
-  maxError = max(maxError, error);
-  smoothedError = lerp(smoothedError, error, 0.05);
-
-  endpointPath.add(arm.getComponent("end").toWorldSpace(new PVector(0, 0, 0)));
   
-  errorPath.add(error);
+  if(!paused || step){
+
+    ball.physicsUpdate();
+    
+    //float a = 100; // 2
+    //float b = 100; // 3
+    //float c = 100; // 5
+    //float d = 0.01;//1.349823; // 1.349823
   
-  println(maxError);
+    float currentPos = triangle(2*(time - timeOffset) / tp.getLength())*tp.getLength();
+    //float currentPos = ((-cos(20 * (time - timeOffset) /tp.getLength()) / 2) + 0.5) * tp.getLength();
   
-  if(currentPos < 0.1){
-    if(!pCloseToZero){
-      timeOffset = time;
-      /*for(int i : range(50)){
-        tp.add(paramFunction(currentParamValue));
-        currentParamValue += 1f/50;
-      }*/
-      tp.add(new PVector(random(0, 6), random(0, 6), random(0, 6)));
-      pCloseToZero = true;
-    }
-  }else pCloseToZero = false;
+    //PVector target = tp.getPoint(currentPos);
+    PVector target = ball.transform.position.copy();
   
-  //arm.getComponent(HingeJoint.class, "j3").rotateBy(0.1);
-
-  //PVector target = new PVector();
-  //for (int j = 0; j < 1; j ++) {
-  //  //target.set(cos(time)*(4+sin(time*(a + .01))*3), (sin(time* (b))+1)*2, sin(time)*(4+sin(time*(c + .01))*3));
-  //  float x = 16*pow(sin(time), 3);
-  //  float y = 13*cos(time)-5*cos(2*time)-2*cos(3*time)-cos(4*time);
-  //  target.set(cos(time*d)*2*(x*0.04+2), y*0.1, sin(time*d)*2*(x*0.04+2));
-  //  //target.set(cos(time*d)*2*(sin(time*a)+2), (cos(time*b)+1)*2, sin(time*d)*2*(sin(time*c)+2));
-  //  for (int i = 0; i < 25; i ++)
-  //    arm.getComponent("end").inverseKinematicsIteration(target);
-  //  //arm.getComponent(HingeJoint.class, "j1").setRotation(time*2 % TWO_PI);
-  //  //arm.getComponent(HingeJoint.class, "j2").setRotation(sin(time*1.5)*HALF_PI);
-  //  //arm.getComponent(HingeJoint.class, "j3").setRotation(sin(time*3)*HALF_PI);
-
-  //  //arm.getComponent(HingeJoint.class, "j1").setRotation(armAngleX);
-  //  //arm.getComponent(HingeJoint.class, "j2").setRotation(armAngleZ);
-  //  arm.getComponent(HingeJoint.class, "j3").rotateBy(0.1);
-  //  endpointPath.add(arm.getComponent("end").toWorldSpace(new PVector(0, 0, 0)));
-  //  time += dt;
-  //}
-
-
-  //armAngleX += armSpeed;
-  //if(abs(armAngleX) > armAngleRange){
-  //  armAngleZ += abs(armSpeed);
-  //  armSpeed *= -1;
-  //  armAngleX += armSpeed;
-  //  if(armAngleZ > armAngleRange) armAngleZ = -armAngleRange;
-  //}
-
-
-  //al.joint.transform.setRotation(new PVector(armAngleX, 0, armAngleZ));
-
-
-  // DON'T TOUCH (ROTATE CAMERA AND UPDATE TIME STUFF)
-
+    float error = arm.getComponent("end").inverseKinematics(target);
+    maxError = max(maxError, error);
+    smoothedError = lerp(smoothedError, error, 0.05);
+  
+    endpointPath.add(arm.getComponent("end").toWorldSpace(new PVector(0, 0, 0)));
+    
+    errorPath.add(error);
+    
+    println(maxError);
+    
+    if(currentPos < 0.1){
+      if(!pCloseToZero){
+        timeOffset = time;
+        /*for(int i : range(50)){
+          tp.add(paramFunction(currentParamValue));
+          currentParamValue += 1f/50;
+        }*/
+        tp.add(new PVector(random(0, 6), random(0, 6), random(0, 6)));
+        pCloseToZero = true;
+      }
+    }else pCloseToZero = false;
+    
+    //arm.getComponent(HingeJoint.class, "j3").rotateBy(0.1);
+  
+    //PVector target = new PVector();
+    //for (int j = 0; j < 1; j ++) {
+    //  //target.set(cos(time)*(4+sin(time*(a + .01))*3), (sin(time* (b))+1)*2, sin(time)*(4+sin(time*(c + .01))*3));
+    //  float x = 16*pow(sin(time), 3);
+    //  float y = 13*cos(time)-5*cos(2*time)-2*cos(3*time)-cos(4*time);
+    //  target.set(cos(time*d)*2*(x*0.04+2), y*0.1, sin(time*d)*2*(x*0.04+2));
+    //  //target.set(cos(time*d)*2*(sin(time*a)+2), (cos(time*b)+1)*2, sin(time*d)*2*(sin(time*c)+2));
+    //  for (int i = 0; i < 25; i ++)
+    //    arm.getComponent("end").inverseKinematicsIteration(target);
+    //  //arm.getComponent(HingeJoint.class, "j1").setRotation(time*2 % TWO_PI);
+    //  //arm.getComponent(HingeJoint.class, "j2").setRotation(sin(time*1.5)*HALF_PI);
+    //  //arm.getComponent(HingeJoint.class, "j3").setRotation(sin(time*3)*HALF_PI);
+  
+    //  //arm.getComponent(HingeJoint.class, "j1").setRotation(armAngleX);
+    //  //arm.getComponent(HingeJoint.class, "j2").setRotation(armAngleZ);
+    //  arm.getComponent(HingeJoint.class, "j3").rotateBy(0.1);
+    //  endpointPath.add(arm.getComponent("end").toWorldSpace(new PVector(0, 0, 0)));
+    //  time += dt;
+    //}
+  
+  
+    //armAngleX += armSpeed;
+    //if(abs(armAngleX) > armAngleRange){
+    //  armAngleZ += abs(armSpeed);
+    //  armSpeed *= -1;
+    //  armAngleX += armSpeed;
+    //  if(armAngleZ > armAngleRange) armAngleZ = -armAngleRange;
+    //}
+  
+  
+    //al.joint.transform.setRotation(new PVector(armAngleX, 0, armAngleZ));
+    
+    updatePlots();
+    
+    time += dt;
+    step = false;
+  }
+  
+    // DON'T TOUCH (ROTATE CAMERA)
   if (mousePressed && pmousePressed) { // pmousePressed bcs touch input is annoying otherwise
     xAngle += (pmouseX - mouseX)*mouseSensitivity/360*TWO_PI;
     yAngle += (pmouseY - mouseY)*mouseSensitivity/360*TWO_PI;
@@ -131,7 +152,6 @@ void draw() {
   }
 
   pmousePressed = mousePressed;
-  time += dt;
 
   // RENDERING
   pushMatrix(); // Encapsulate whole 3D render part
@@ -150,7 +170,7 @@ void draw() {
   rotateX(yAngle);
   rotateY(xAngle);
 
-  pushMatrix();
+  //pushMatrix();
   worldTransform.apply();
   
   PMatrix3D mat = getMatrix((PMatrix3D)null);
@@ -166,7 +186,7 @@ void draw() {
   strokeWeight(0.2);
   //point(target.x, target.y, target.z);
 
-  tp.show();
+  //tp.show();
 
   pushStyle();
   colorMode(HSB);
@@ -186,8 +206,11 @@ void draw() {
   }
   endShape();
   popStyle();
-
-  popMatrix();
+  
+  ball.render();
+  ball.bounds.show();
+  
+  //popMatrix();
   
   popMatrix(); // Encapsulates whole 3D render part
   
@@ -198,7 +221,7 @@ void draw() {
   errorBar(width-20, 20, 20, height-40, maxError, smoothedError);
   
   //angleList(arm.getAllComponents(HingeJoint.class));
-  updateAndShowPlots();
+  showPlots();
   
   //saveFrame("frames/frame####.png");
 }
@@ -237,9 +260,14 @@ void setupPlots(){
   }
 }
 
-void updateAndShowPlots(){
+void updatePlots(){
   for(int i = 0; i < hingeJoints.size(); i ++){
     anglePlots.get(i).addValue(degrees(hingeJoints.get(i).getAngle()));
+  }
+}
+
+void showPlots(){
+  for(int i = 0; i < hingeJoints.size(); i ++){
     anglePlots.get(i).show();
   }
 }
@@ -254,6 +282,12 @@ void keyPressed() {
     errorPath.clear();
   }else if(key == 'd'){
     arm.setShowDebug(!arm.showDebug);
+  }else if(key == 'p'){
+    paused = !paused;
+  }else if(key == CODED){
+    if(keyCode == RIGHT){
+      step = true;
+    }
   }
 }
 
