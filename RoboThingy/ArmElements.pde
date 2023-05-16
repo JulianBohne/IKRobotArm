@@ -81,8 +81,8 @@ class ArmLink extends ArmElement{
   //}
   
   //@Override
-  //protected void solveLocal(PVector localEnd, PVector localTarget){
-  //  setLength((localTarget.y - localEnd.y) + len);
+  //protected void solveLocal(PVector localEnd, PVector localTarget, float amount){
+  //  setLength((localTarget.y - localEnd.y)*amount + len);
   //}
 }
 
@@ -109,13 +109,20 @@ class ObliqueSwivelJoint extends HingeJoint{
     this.obliqueness = obliqueness;
     this.constrained = false;
     transform.rotation.rotateZ(PI/2 - obliqueness);
+    visual.transform.scale.set(0.8, 0.2, 0.8);
   }
   
   @Override
   ArmElement addChildUnique(ArmElement child){
     super.addChildUnique(child);
-    child.transform.setRotationVector(new PVector(0,0,-obliqueness - PI/2));
+    child.transform.rotation.rotateZ(-obliqueness -PI/2);
     return this;
+  }
+}
+
+class SwivelJoint extends ObliqueSwivelJoint{
+  SwivelJoint(){
+    super(0);
   }
 }
 
@@ -161,15 +168,10 @@ class HingeJoint extends ArmElement{
   @Override
   protected float testSolveLocal(PVector localEnd, PVector localTarget){
     float deltaAngle = toLegalAngle(getDeltaAngle(localEnd, localTarget));
-    PVector dings = localEnd.copy();
-    rotateX(dings, deltaAngle);
-    return PVector.dist(localTarget, dings);
-    //return len(localTarget.x - localEnd.x, len(localTarget.y, localTarget.z) - len(localEnd.y, localEnd.z));
+    PVector transformedEnd = localEnd.copy();
+    rotateX(transformedEnd, deltaAngle);
+    return PVector.dist(localTarget, transformedEnd);// * (abs(deltaAngle) + 2);
   }
-  
-  //private float len(float x, float y){
-  //  return sqrt(x*x + y*y);
-  //}
   
   private float getDeltaAngle(PVector localEnd, PVector localTarget){
     PVector projectedEnd = new PVector(localEnd.y, localEnd.z);

@@ -1,3 +1,4 @@
+
 class ContinuousPlot{
   float x, y, w, h, min, max;
   boolean autoScale = true;

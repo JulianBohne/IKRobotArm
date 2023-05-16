@@ -1,3 +1,4 @@
+
 class Transform{
   public PVector position;
   public PMatrix3D rotation;
@@ -57,15 +58,6 @@ class Transform{
     scale(scale.x, scale.y, scale.z);
   }
   
-  //public void unapply(){
-  //  scale(1/scale.x, 1/scale.y, 1/scale.z);
-  //  PVector rot = getRotationVector();
-  //  rotateZ(-rot.z);
-  //  rotateX(-rot.y);
-  //  rotateY(-rot.z);
-  //  translate(-position.x, -position.y, -position.z);
-  //}
-  
   public PMatrix3D asMatrix(){
     PMatrix3D current = new PMatrix3D();
     current.translate(position.x, position.y, position.z);
@@ -75,7 +67,7 @@ class Transform{
   }
 }
 
-class OldTransform{ // TODO: Remove unnecessary allocations (if performance becomes a problem)
+class OldTransform{
 
   // Could optimize these, so it takes up less space, but this works for now
   private PMatrix3D positionMat;
@@ -87,17 +79,6 @@ class OldTransform{ // TODO: Remove unnecessary allocations (if performance beco
     rotation    = new PMatrix3D();
     scaleMat    = new PMatrix3D();
   }
-  
-  /*public void show(){
-    pushMatrix();
-    PMatrix3D current = new PMatrix3D(); // maybe without constantly allocating stuff????? hellooooo
-    mult(rotation, current);
-    mult(positionMat, current);
-    mult(getMatrix((PMatrix3D) null), current); // maybe without constantly allocating stuff????? hellooooo
-    setMatrix(current);
-    axes(getScale(), 0.5);
-    popMatrix();
-  }*/
   
   public void reset(){
     resetPosition();
@@ -212,7 +193,7 @@ class OldTransform{ // TODO: Remove unnecessary allocations (if performance beco
   }
   
   public void rotateX(float angle){ // angle in radians
-    PMatrix3D rotX = new PMatrix3D( // alloc bad :'((((
+    PMatrix3D rotX = new PMatrix3D(
       1,          0,           0, 0,
       0, cos(angle), -sin(angle), 0,
       0, sin(angle),  cos(angle), 0,
@@ -222,7 +203,7 @@ class OldTransform{ // TODO: Remove unnecessary allocations (if performance beco
   }
   
   public void rotateY(float angle){ // angle in radians
-    PMatrix3D rotY = new PMatrix3D( // alloc bad :'((((
+    PMatrix3D rotY = new PMatrix3D(
        cos(angle), 0, sin(angle), 0,
                 0, 1,          0, 0,
       -sin(angle), 0, cos(angle), 0,
@@ -232,7 +213,7 @@ class OldTransform{ // TODO: Remove unnecessary allocations (if performance beco
   }
   
   public void rotateZ(float angle){ // angle in radians
-    PMatrix3D rotZ = new PMatrix3D( // alloc bad :'((((
+    PMatrix3D rotZ = new PMatrix3D(
       cos(angle), -sin(angle), 0, 0,
       sin(angle),  cos(angle), 0, 0,
                0,           0, 1, 0,
@@ -268,7 +249,7 @@ class OldTransform{ // TODO: Remove unnecessary allocations (if performance beco
   
   public void apply(){
     PMatrix3D current = asMatrix();
-    mult(getMatrix((PMatrix3D) null), current); // maybe without constantly allocating stuff????? hellooooo
+    mult(getMatrix((PMatrix3D) null), current);
     setMatrix(current); // not using apply matrix because it's apparently slow, hope this works though
   }
   
@@ -279,7 +260,7 @@ class OldTransform{ // TODO: Remove unnecessary allocations (if performance beco
   }
   
   public PMatrix3D asMatrix(){
-    PMatrix3D current = new PMatrix3D(); // maybe without constantly allocating stuff????? hellooooo
+    PMatrix3D current = new PMatrix3D();
     mult(scaleMat, current);
     //current.apply(scaleMat);
     mult(rotation, current);
@@ -290,7 +271,7 @@ class OldTransform{ // TODO: Remove unnecessary allocations (if performance beco
   }
   
   private void mult(PMatrix3D a, PMatrix3D b){
-    float[] ncol = new float[4]; // BOOOOO EVEN MORE ALLOCATIONS >:(
+    float[] ncol = new float[4];
     
     ncol[0] = a.m00*b.m00 + a.m01*b.m10 + a.m02*b.m20 + a.m03*b.m30;
     ncol[1] = a.m10*b.m00 + a.m11*b.m10 + a.m12*b.m20 + a.m13*b.m30;

@@ -1,3 +1,4 @@
+
 void errorBar(int x, int y, int w, int h, float errorMax, float errorCurrent){
   float padding = 5;
   float numEveryPixels = 100;

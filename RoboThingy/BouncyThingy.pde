@@ -1,3 +1,4 @@
+
 class BouncyThingy extends GameObject{
   float radius = 1;
   PVector velocity;
@@ -11,18 +12,20 @@ class BouncyThingy extends GameObject{
   
   void physicsUpdate(){
     
-    float x = transform.position.x, y = transform.position.y, z = transform.position.z;
-    if(x-radius < bounds.x0 || x+radius > bounds.x1) velocity.x *= -1;
-    if(y-radius < bounds.y0 || y+radius > bounds.y1) velocity.y *= -1;
-    if(z-radius < bounds.z0 || z+radius > bounds.z1) velocity.z *= -1;
-    transform.position.x = constrain(x, bounds.x0+radius, bounds.x1-radius);
-    transform.position.y = constrain(y, bounds.y0+radius, bounds.y1-radius);
-    transform.position.z = constrain(z, bounds.z0+radius, bounds.z1-radius);
+    
     
     velocity.add(PVector.mult(gravity, dt));
     
     PVector delta = PVector.mult(velocity, dt);
     transform.position.add(delta);
+    
+    float x = transform.position.x, y = transform.position.y, z = transform.position.z;
+    if(x-radius < bounds.x0 || x+radius > bounds.x1) velocity.x *= -1;
+    if(y < bounds.y0+radius || y > bounds.y1-radius) velocity.y *= -1;
+    if(z-radius < bounds.z0 || z+radius > bounds.z1) velocity.z *= -1;
+    transform.position.x = constrain(x, bounds.x0+radius, bounds.x1-radius);
+    transform.position.y = constrain(y, bounds.y0+radius, bounds.y1-radius);
+    transform.position.z = constrain(z, bounds.z0+radius, bounds.z1-radius);
   }
   
   @Override

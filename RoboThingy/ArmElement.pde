@@ -7,57 +7,64 @@ class ArmElement extends GameObject{
   boolean disableIK = false;
   String name = "";
   boolean showDebug = false;
+  
   ArmElement(){
     this(null);
   }
   
   float inverseKinematics(PVector target){
-    return inverseKinematics(target, 0.000001, 1000);
+    return inverseKinematics(target, 0.000001, 100, 10);
   }
   
-  //@SuppressWarnings("unused")
-  float inverseKinematics(PVector target, float epsilon, int maxIterations){
-    PVector last = toWorldSpace(new PVector(0, 0, 0));
+  @SuppressWarnings("unused")
+  float inverseKinematics(PVector target, float epsilon, int subSteps, int maxIterPerSubStep){
+    PVector start = toWorldSpace(new PVector(0, 0, 0));
+    PVector end = target;
+    PVector last = start.copy();
     PVector current;
     float epsilonSq = epsilon*epsilon;
     float error = Float.MAX_VALUE;
-    for(int i : range(maxIterations)){
-      error = inverseKinematicsIteration(target);
-      current = toWorldSpace(new PVector(0, 0, 0));
-      if(last.sub(current).magSq() < epsilonSq){
-        println(i);
-        return error;
+    for(int j : range(subSteps)){ // TODO: I dunno mate
+      target = PVector.lerp(start, end, (float)(j+1)/subSteps);
+      for(int i : range(maxIterPerSubStep)){
+        error = inverseKinematicsIteration(target, 1);
+        current = toWorldSpace(new PVector(0, 0, 0));
+        if(last.sub(current).magSq() < epsilonSq){
+          break;
+        }
+        last = current;
       }
-      last = current;
     }
     return error;
   }
   
-  float inverseKinematicsIteration(PVector target){
+  float inverseKinematicsIteration(PVector target, float amount){
     PVector localTarget = toLocalSpace(target);
-    return inverseKinematicsIteration(localTarget.mag(), new PVector(0, 0, 0), localTarget);
+    return inverseKinematicsIteration(Float.MAX_VALUE, new PVector(0, 0, 0), localTarget, amount);
   }
   
-  private float inverseKinematicsIteration(float childMinError, PVector localEnd, PVector localTarget){
+  private float inverseKinematicsIteration(float childMinError, PVector localEnd, PVector localTarget, float amount){
     float localError = disableIK ? Float.MAX_VALUE : testSolveLocal(localEnd, localTarget);
     if(parent != null){
       float parentMinError = parent.inverseKinematicsIteration(
         min(childMinError, localError),
         toParentSpace(localEnd),
-        toParentSpace(localTarget)
+        toParentSpace(localTarget),
+        amount
       );
       if(parentMinError < localError && parentMinError <= childMinError) return parentMinError;
     }
     if(localError <= childMinError){
-      solveLocal(localEnd, localTarget, 0.2);
+      solveLocal(localEnd, localTarget, amount);
       return localError;
     }
     
     return childMinError;
   }
   
+  @SuppressWarnings("unused")
   protected float testSolveLocal(PVector localEnd, PVector localTarget){
-    return PVector.dist(localTarget, localEnd);
+    return Float.MAX_VALUE;//PVector.dist(localTarget, localEnd);
   }
   
   @SuppressWarnings("unused")
