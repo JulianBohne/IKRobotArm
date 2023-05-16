@@ -1,5 +1,6 @@
 # Robot Arm Thingy
-It's smthn to make robot arm stuff ig
+An ad hoc inverse kinematics thing for robot arms.
+WARNING: The code is not documented, but you can look at the pictures below for a glimpse of the capabilities.
 
 ## Here are some cool pics:
 ![Test2](https://user-images.githubusercontent.com/57051885/205487631-2aec6be9-a0a7-4b1e-820c-a15d387c8ad1.gif)
