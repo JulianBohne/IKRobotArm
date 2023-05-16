@@ -11,6 +11,7 @@ The graphs show the joint angles (made to look nice, not really practical becaus
 The bar on the right and the color of the path drawn by the arm indicate how large the error is.
 
 The toolpath is randomly generated and the arm follows it. The 'tool' (red ball) at the end of the arm follows the path, but it's rotation is not restricted. This could be added in the future though.
+
 ![Test2](https://user-images.githubusercontent.com/57051885/205487631-2aec6be9-a0a7-4b1e-820c-a15d387c8ad1.gif)
 ![Screenshot 2022-12-02 194154](https://user-images.githubusercontent.com/57051885/205363880-c59deda6-6b38-4f8d-a5f5-558b0ecb00b7.png)
 ![Example](https://user-images.githubusercontent.com/57051885/195630308-ba640372-aaca-40e1-a069-3018957cde6a.png)
